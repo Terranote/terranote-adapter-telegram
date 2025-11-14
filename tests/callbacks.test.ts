@@ -15,7 +15,7 @@ class FakeCoreClient {
 }
 
 class FakeTelegramBotClient {
-  readonly sendTextMessage = vi.fn<(chatId: string, text: string), Promise<void>>()
+  readonly sendTextMessage = vi.fn<[chatId: string, text: string], Promise<void>>()
 }
 
 const baseConfig: AppConfig = {
@@ -182,5 +182,3 @@ describe('POST /callbacks/note-created', () => {
     expect(response.body).toEqual({ status: 'telegram_unreachable' })
   })
 })
-
-

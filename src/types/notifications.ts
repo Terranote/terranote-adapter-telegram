@@ -12,5 +12,3 @@ export const noteCreatedNotificationSchema = z.object({
 })
 
 export type NoteCreatedNotification = z.infer<typeof noteCreatedNotificationSchema>
-
-

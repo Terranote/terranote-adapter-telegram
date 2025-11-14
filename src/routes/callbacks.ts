@@ -37,7 +37,7 @@ export const createCallbacksRouter = ({
   logger
 }: CallbacksDependencies): Router => {
   const router = Router()
-  const validateSignature = verifySignature(config.notifier.secretToken)
+  const validateSignature = verifySignature(config.notifier?.secretToken)
 
   router.post('/note-created', async (req, res) => {
     if (!validateSignature(req.header('x-terranote-signature') ?? undefined)) {
@@ -98,5 +98,3 @@ export const createCallbacksRouter = ({
 
   return router
 }
-
-
