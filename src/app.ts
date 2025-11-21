@@ -43,7 +43,12 @@ export const createApp = ({
       botClient: resolvedBotClient
     })
   )
-  app.use('/metrics', createMetricsRouter())
+  app.use(
+    '/metrics',
+    createMetricsRouter({
+      config
+    })
+  )
   app.use(
     '/callbacks',
     createCallbacksRouter({

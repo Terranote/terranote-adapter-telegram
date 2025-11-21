@@ -22,6 +22,10 @@ const config: AppConfig = {
   },
   notifier: {
     secretToken: undefined
+  },
+  metrics: {
+    username: undefined,
+    password: undefined
   }
 }
 

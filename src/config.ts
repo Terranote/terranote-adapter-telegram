@@ -46,6 +46,18 @@ const envSchema = z.object({
     .trim()
     .optional()
     .or(z.literal(''))
+    .transform((value) => (value === '' ? undefined : value)),
+  METRICS_USERNAME: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(''))
+    .transform((value) => (value === '' ? undefined : value)),
+  METRICS_PASSWORD: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(''))
     .transform((value) => (value === '' ? undefined : value))
 })
 
@@ -67,6 +79,10 @@ export type AppConfig = {
   notifier: {
     secretToken?: string
   }
+  metrics: {
+    username?: string
+    password?: string
+  }
 }
 
 export const loadConfig = (): AppConfig => {
@@ -79,7 +95,9 @@ export const loadConfig = (): AppConfig => {
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     TELEGRAM_API_BASE_URL: process.env.TELEGRAM_API_BASE_URL ?? 'https://api.telegram.org',
     TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET,
-    NOTIFIER_SECRET_TOKEN: process.env.NOTIFIER_SECRET_TOKEN
+    NOTIFIER_SECRET_TOKEN: process.env.NOTIFIER_SECRET_TOKEN,
+    METRICS_USERNAME: process.env.METRICS_USERNAME,
+    METRICS_PASSWORD: process.env.METRICS_PASSWORD
   }
 
   const parsed = envSchema.safeParse(rawEnv)
@@ -105,6 +123,10 @@ export const loadConfig = (): AppConfig => {
     },
     notifier: {
       secretToken: parsed.data.NOTIFIER_SECRET_TOKEN
+    },
+    metrics: {
+      username: parsed.data.METRICS_USERNAME,
+      password: parsed.data.METRICS_PASSWORD
     }
   }
 }

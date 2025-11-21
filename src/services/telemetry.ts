@@ -2,7 +2,8 @@ import {
   Counter,
   Histogram,
   Registry,
-  collectDefaultMetrics
+  collectDefaultMetrics,
+  register
 } from 'prom-client'
 
 export class TelemetryService {
@@ -101,8 +102,8 @@ export class TelemetryService {
     collectDefaultMetrics({ register: this.registry })
   }
 
-  exportPrometheus(): string {
-    return this.registry.metrics()
+  async exportPrometheus(): Promise<string> {
+    return await this.registry.metrics()
   }
 
   reset(): void {

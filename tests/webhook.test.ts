@@ -25,6 +25,13 @@ const baseConfig: AppConfig = {
     botToken: 'token',
     apiBaseUrl: 'https://api.telegram.org',
     webhookSecret: 'secret'
+  },
+  notifier: {
+    secretToken: undefined
+  },
+  metrics: {
+    username: undefined,
+    password: undefined
   }
 }
 
@@ -54,6 +61,14 @@ const buildApp = (overrides?: {
     telegram: {
       ...baseConfig.telegram,
       ...(configOverride?.telegram ?? {})
+    },
+    notifier: {
+      ...baseConfig.notifier,
+      ...(configOverride?.notifier ?? {})
+    },
+    metrics: {
+      ...baseConfig.metrics,
+      ...(configOverride?.metrics ?? {})
     }
   }
 

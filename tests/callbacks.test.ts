@@ -34,6 +34,10 @@ const baseConfig: AppConfig = {
   },
   notifier: {
     secretToken: 'secret'
+  },
+  metrics: {
+    username: undefined,
+    password: undefined
   }
 }
 
