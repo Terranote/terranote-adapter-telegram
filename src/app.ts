@@ -32,7 +32,14 @@ export const createApp = ({
   const resolvedBotClient = botClient ?? new TelegramBotClient(config)
   const resolvedMessageProcessor = messageProcessor ?? new MessageProcessor()
 
-  app.use('/health', createHealthRouter())
+  app.use(
+    '/health',
+    createHealthRouter({
+      config,
+      coreClient: resolvedCoreClient,
+      botClient: resolvedBotClient
+    })
+  )
   app.use(
     '/callbacks',
     createCallbacksRouter({
