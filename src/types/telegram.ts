@@ -44,3 +44,5 @@ export type TelegramLocation = z.infer<typeof telegramLocationSchema>
 export type TelegramMessage = z.infer<typeof telegramMessageSchema>
 export type TelegramUpdate = z.infer<typeof telegramUpdateSchema>
 
+
+
