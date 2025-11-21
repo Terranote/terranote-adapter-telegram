@@ -40,6 +40,12 @@ const envSchema = z.object({
     .trim()
     .optional()
     .or(z.literal(''))
+    .transform((value) => (value === '' ? undefined : value)),
+  NOTIFIER_SECRET_TOKEN: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(''))
     .transform((value) => (value === '' ? undefined : value))
 })
 
@@ -58,6 +64,9 @@ export type AppConfig = {
     apiBaseUrl: string
     webhookSecret?: string
   }
+  notifier: {
+    secretToken?: string
+  }
 }
 
 export const loadConfig = (): AppConfig => {
@@ -69,7 +78,8 @@ export const loadConfig = (): AppConfig => {
     CORE_API_TIMEOUT_MS: process.env.CORE_API_TIMEOUT_MS ?? '5000',
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     TELEGRAM_API_BASE_URL: process.env.TELEGRAM_API_BASE_URL ?? 'https://api.telegram.org',
-    TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET
+    TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET,
+    NOTIFIER_SECRET_TOKEN: process.env.NOTIFIER_SECRET_TOKEN
   }
 
   const parsed = envSchema.safeParse(rawEnv)
@@ -92,7 +102,12 @@ export const loadConfig = (): AppConfig => {
       botToken: parsed.data.TELEGRAM_BOT_TOKEN,
       apiBaseUrl: parsed.data.TELEGRAM_API_BASE_URL,
       webhookSecret: parsed.data.TELEGRAM_WEBHOOK_SECRET
+    },
+    notifier: {
+      secretToken: parsed.data.NOTIFIER_SECRET_TOKEN
     }
   }
 }
+
+
 
