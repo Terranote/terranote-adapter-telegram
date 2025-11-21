@@ -25,7 +25,7 @@ const verifySignature =
 
 const formatNotification = (notification: NoteCreatedNotification): string =>
   [
-    `Nota creada: ${notification.note_url}`,
+    notification.note_url ? `Nota creada: ${notification.note_url}` : 'Nota creada',
     `Lat: ${notification.latitude}, Lon: ${notification.longitude}`,
     '',
     notification.text

@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const noteCreatedNotificationSchema = z.object({
   channel: z.string().regex(/^[a-z0-9_-]+$/),
   user_id: z.string().min(1),
-  note_url: z.string().url(),
+  note_url: z.string().url().nullable().optional(),
   note_id: z.string().min(1),
   latitude: z.number(),
   longitude: z.number(),
