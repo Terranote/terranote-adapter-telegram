@@ -48,9 +48,9 @@ export const createCallbacksRouter = ({
     const parsed = noteCreatedNotificationSchema.safeParse(req.body)
 
     if (!parsed.success) {
-      logger.warn('invalid_notification_payload', {
+      logger.warn({
         error: parsed.error.flatten()
-      })
+      }, 'invalid_notification_payload')
       res.status(400).json({ status: 'invalid_notification' })
       return
     }
@@ -58,7 +58,7 @@ export const createCallbacksRouter = ({
     const notification = parsed.data
 
     if (notification.channel !== 'telegram') {
-      logger.info('ignored_notification', { reason: 'different_channel', channel: notification.channel })
+      logger.info({ reason: 'different_channel', channel: notification.channel }, 'ignored_notification')
       res.status(202).json({ status: 'ignored' })
       return
     }
@@ -67,20 +67,20 @@ export const createCallbacksRouter = ({
       await botClient.sendTextMessage(notification.user_id, formatNotification(notification))
     } catch (error) {
       if (error instanceof TelegramRequestRejectedError) {
-        logger.error('telegram_rejected_notification', {
+        logger.error({
           status_code: error.statusCode,
           response: error.responseBody,
           user_id: notification.user_id
-        })
+        }, 'telegram_rejected_notification')
         res.status(502).json({ status: 'telegram_error' })
         return
       }
 
       if (error instanceof TelegramRequestFailedError) {
-        logger.error('telegram_unreachable', {
+        logger.error({
           error: error.message,
           user_id: notification.user_id
-        })
+        }, 'telegram_unreachable')
         res.status(502).json({ status: 'telegram_unreachable' })
         return
       }
@@ -88,10 +88,10 @@ export const createCallbacksRouter = ({
       throw error
     }
 
-    logger.info('notification_sent', {
+    logger.info({
       user_id: notification.user_id,
       note_id: notification.note_id
-    })
+    }, 'notification_sent')
 
     res.status(202).json({ status: 'accepted' })
   })

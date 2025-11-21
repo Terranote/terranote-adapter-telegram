@@ -49,9 +49,9 @@ export const createTelegramWebhookRouter = ({
       const parsed = telegramUpdateSchema.safeParse(req.body)
 
       if (!parsed.success) {
-        logger.warn('invalid_update_payload', {
+        logger.warn({
           error: parsed.error.flatten()
-        })
+        }, 'invalid_update_payload')
         res.status(400).json({ status: 'invalid_update' })
         return
       }
@@ -59,7 +59,7 @@ export const createTelegramWebhookRouter = ({
       const update = parsed.data
 
       if (!update.message) {
-        logger.info('ignored_update', { reason: 'missing_message' })
+        logger.info({ reason: 'missing_message' }, 'ignored_update')
         res.status(202).json({ status: 'ignored' })
         return
       }
@@ -69,9 +69,9 @@ export const createTelegramWebhookRouter = ({
         interaction = messageProcessor.toInteraction(update.message)
       } catch (error) {
         if (error instanceof UnsupportedTelegramMessageError) {
-          logger.warn('unsupported_message_type', {
+          logger.warn({
             message_id: update.message.message_id
-          })
+          }, 'unsupported_message_type')
           res.status(202).json({ status: 'unsupported' })
           return
         }
@@ -82,20 +82,20 @@ export const createTelegramWebhookRouter = ({
         await coreClient.sendInteraction(interaction)
       } catch (error) {
         if (error instanceof CoreRequestRejectedError) {
-          logger.error('core_rejected_interaction', {
+          logger.error({
             status_code: error.statusCode,
             response: error.responseBody,
             user_id: interaction.user_id
-          })
+          }, 'core_rejected_interaction')
           res.status(502).json({ status: 'core_error' })
           return
         }
 
         if (error instanceof CoreRequestFailedError) {
-          logger.error('core_unreachable', {
+          logger.error({
             error: error.message,
             user_id: interaction.user_id
-          })
+          }, 'core_unreachable')
           res.status(502).json({ status: 'core_unreachable' })
           return
         }
@@ -103,10 +103,10 @@ export const createTelegramWebhookRouter = ({
         throw error
       }
 
-      logger.info('interaction_forwarded', {
+      logger.info({
         user_id: interaction.user_id,
         message_id: update.message.message_id
-      })
+      }, 'interaction_forwarded')
 
       res.status(202).json({ status: 'accepted' })
     }
