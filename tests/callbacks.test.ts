@@ -66,6 +66,10 @@ const buildApp = (overrides?: {
     notifier: {
       ...baseConfig.notifier,
       ...(configOverride?.notifier ?? {})
+    },
+    metrics: {
+      ...baseConfig.metrics,
+      ...(configOverride?.metrics ?? {})
     }
   }
 
