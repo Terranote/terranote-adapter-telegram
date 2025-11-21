@@ -1,4 +1,5 @@
 import { type AppConfig } from '@/config.js'
+import { telemetry } from '@/services/telemetry.js'
 import { interactionRequestSchema, type InteractionRequest } from '@/types/interaction.js'
 
 export class CoreClientError extends Error {
@@ -40,6 +41,9 @@ export class TerranoteCoreClient {
       controller.abort()
     }, this.timeoutMs)
 
+    const startTime = Date.now()
+    let status = 'success'
+
     try {
       const response = await fetch(new URL('/api/v1/interactions', this.baseUrl), {
         method: 'POST',
@@ -52,20 +56,26 @@ export class TerranoteCoreClient {
       })
 
       if (!response.ok) {
+        status = 'error'
         const body = await response.text()
         throw new CoreRequestRejectedError(response.status, body)
       }
     } catch (error) {
       if (error instanceof CoreClientError) {
+        status = 'error'
         throw error
       }
 
+      status = 'error'
       const message =
         error instanceof Error ? error.message : 'Unknown error while contacting core API'
 
       throw new CoreRequestFailedError(message, { cause: error })
     } finally {
       clearTimeout(timeout)
+      const duration = (Date.now() - startTime) / 1000
+      telemetry.coreApiCallsTotal.inc({ status })
+      telemetry.coreApiCallDuration.observe({ status }, duration)
     }
   }
 }

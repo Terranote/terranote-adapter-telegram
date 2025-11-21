@@ -32,8 +32,10 @@ Adaptador HTTP que integra la Bot API de Telegram con Terranote Core.
 
 ## Endpoints principales
 
-- `GET /health`: verificación básica del servicio.
+- `GET /health`: verificación de salud del servicio con información detallada (uptime, versión, dependencias).
+- `GET /metrics`: métricas en formato Prometheus para monitoreo.
 - `POST /telegram/webhook`: recepción de actualizaciones de Telegram, normalización y reenvío hacia Terranote Core.
+- `POST /callbacks/note-created`: recepción de notificaciones del Core cuando se crea una nota.
 
 ## Pruebas
 

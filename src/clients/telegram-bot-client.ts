@@ -1,4 +1,5 @@
 import type { AppConfig } from '@/config.js'
+import { telemetry } from '@/services/telemetry.js'
 
 export class TelegramBotClientError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
@@ -38,6 +39,9 @@ export class TelegramBotClient {
       controller.abort()
     }, this.timeoutMs)
 
+    const startTime = Date.now()
+    let status = 'success'
+
     try {
       const endpoint = new URL(`/bot${this.botToken}/sendMessage`, this.baseUrl)
       const response = await fetch(endpoint, {
@@ -53,20 +57,26 @@ export class TelegramBotClient {
       })
 
       if (!response.ok) {
+        status = 'error'
         const body = await response.text()
         throw new TelegramRequestRejectedError(response.status, body)
       }
     } catch (error) {
       if (error instanceof TelegramBotClientError) {
+        status = 'error'
         throw error
       }
 
+      status = 'error'
       const message =
         error instanceof Error ? error.message : 'Unknown error while contacting Telegram'
 
       throw new TelegramRequestFailedError(message, { cause: error })
     } finally {
       clearTimeout(timeout)
+      const duration = (Date.now() - startTime) / 1000
+      telemetry.telegramApiCallsTotal.inc({ status })
+      telemetry.telegramApiCallDuration.observe({ status }, duration)
     }
   }
 }

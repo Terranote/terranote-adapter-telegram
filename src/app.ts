@@ -4,8 +4,10 @@ import { type AppConfig } from '@/config.js'
 import { TerranoteCoreClient } from '@/clients/terranote-core-client.js'
 import { TelegramBotClient } from '@/clients/telegram-bot-client.js'
 import type { Logger } from '@/logger.js'
+import { metricsMiddleware } from '@/middleware/metrics.js'
 import { createCallbacksRouter } from '@/routes/callbacks.js'
 import { createHealthRouter } from '@/routes/health.js'
+import { createMetricsRouter } from '@/routes/metrics.js'
 import { createTelegramWebhookRouter } from '@/routes/webhook.js'
 import { MessageProcessor } from '@/services/message-processor.js'
 
@@ -27,6 +29,7 @@ export const createApp = ({
   const app = express()
 
   app.use(express.json())
+  app.use(metricsMiddleware)
 
   const resolvedCoreClient = coreClient ?? new TerranoteCoreClient(config)
   const resolvedBotClient = botClient ?? new TelegramBotClient(config)
@@ -40,6 +43,7 @@ export const createApp = ({
       botClient: resolvedBotClient
     })
   )
+  app.use('/metrics', createMetricsRouter())
   app.use(
     '/callbacks',
     createCallbacksRouter({
