@@ -171,10 +171,13 @@ describe('POST /callbacks/note-created', () => {
       .send(basePayload)
 
     expect(response.statusCode).toBe(502)
-    expect(response.body).toEqual({ status: 'telegram_error' })
+    expect(response.body).toMatchObject({
+      status: 'error',
+      error: expect.stringContaining('Telegram API rejected request')
+    })
   })
 
-  it('retorna 502 si Telegram no es alcanzable', async () => {
+  it('retorna 503 si Telegram no es alcanzable', async () => {
     const { app, botClient } = buildApp()
 
     botClient.sendTextMessage.mockRejectedValueOnce(
@@ -186,7 +189,10 @@ describe('POST /callbacks/note-created', () => {
       .set(headers)
       .send(basePayload)
 
-    expect(response.statusCode).toBe(502)
-    expect(response.body).toEqual({ status: 'telegram_unreachable' })
+    expect(response.statusCode).toBe(503)
+    expect(response.body).toMatchObject({
+      status: 'error',
+      error: expect.stringContaining('Telegram API request failed')
+    })
   })
 })

@@ -39,7 +39,7 @@ export const createCallbacksRouter = ({
   const router = Router()
   const validateSignature = verifySignature(config.notifier?.secretToken)
 
-  router.post('/note-created', async (req, res) => {
+  router.post('/note-created', async (req, res, next) => {
     if (!validateSignature(req.header('x-terranote-signature') ?? undefined)) {
       res.status(401).json({ status: 'invalid_signature' })
       return
@@ -66,26 +66,9 @@ export const createCallbacksRouter = ({
     try {
       await botClient.sendTextMessage(notification.user_id, formatNotification(notification))
     } catch (error) {
-      if (error instanceof TelegramRequestRejectedError) {
-        logger.error({
-          status_code: error.statusCode,
-          response: error.responseBody,
-          user_id: notification.user_id
-        }, 'telegram_rejected_notification')
-        res.status(502).json({ status: 'telegram_error' })
-        return
-      }
-
-      if (error instanceof TelegramRequestFailedError) {
-        logger.error({
-          error: error.message,
-          user_id: notification.user_id
-        }, 'telegram_unreachable')
-        res.status(502).json({ status: 'telegram_unreachable' })
-        return
-      }
-
-      throw error
+      // Pass error to error handler middleware
+      next(error)
+      return
     }
 
     logger.info({

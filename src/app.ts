@@ -5,6 +5,7 @@ import { TerranoteCoreClient } from '@/clients/terranote-core-client.js'
 import { TelegramBotClient } from '@/clients/telegram-bot-client.js'
 import type { Logger } from '@/logger.js'
 import { metricsMiddleware } from '@/middleware/metrics.js'
+import { createErrorHandler } from '@/middleware/error-handler.js'
 import { createCallbacksRouter } from '@/routes/callbacks.js'
 import { createHealthRouter } from '@/routes/health.js'
 import { createMetricsRouter } from '@/routes/metrics.js'
@@ -70,6 +71,9 @@ export const createApp = ({
   app.use((_req, res) => {
     res.status(404).json({ status: 'not_found' })
   })
+
+  // Error handler must be last
+  app.use(createErrorHandler(logger))
 
   return app
 }

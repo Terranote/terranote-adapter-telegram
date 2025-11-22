@@ -66,6 +66,22 @@ export class TerranoteCoreClient {
         throw error
       }
 
+      // Handle AbortError (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        status = 'error'
+        throw new CoreRequestFailedError('Request timeout: Core API did not respond in time', {
+          cause: error
+        })
+      }
+
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        status = 'error'
+        throw new CoreRequestFailedError('Network error: Failed to connect to Core API', {
+          cause: error
+        })
+      }
+
       status = 'error'
       const message =
         error instanceof Error ? error.message : 'Unknown error while contacting core API'

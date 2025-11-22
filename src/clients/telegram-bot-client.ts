@@ -67,6 +67,24 @@ export class TelegramBotClient {
         throw error
       }
 
+      // Handle AbortError (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        status = 'error'
+        throw new TelegramRequestFailedError(
+          'Request timeout: Telegram API did not respond in time',
+          { cause: error }
+        )
+      }
+
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        status = 'error'
+        throw new TelegramRequestFailedError(
+          'Network error: Failed to connect to Telegram API',
+          { cause: error }
+        )
+      }
+
       status = 'error'
       const message =
         error instanceof Error ? error.message : 'Unknown error while contacting Telegram'

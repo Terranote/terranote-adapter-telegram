@@ -45,7 +45,7 @@ export const createTelegramWebhookRouter = ({
   router.post(
     '/',
     verifySecret(config.telegram.webhookSecret),
-    async (req, res): Promise<void> => {
+    async (req, res, next) => {
       const parsed = telegramUpdateSchema.safeParse(req.body)
 
       if (!parsed.success) {
@@ -72,35 +72,21 @@ export const createTelegramWebhookRouter = ({
           logger.warn({
             message_id: update.message.message_id
           }, 'unsupported_message_type')
+          // Unsupported messages are handled gracefully (202)
           res.status(202).json({ status: 'unsupported' })
           return
         }
-        throw error
+        // Other errors should be handled by error handler
+        next(error)
+        return
       }
 
       try {
         await coreClient.sendInteraction(interaction)
       } catch (error) {
-        if (error instanceof CoreRequestRejectedError) {
-          logger.error({
-            status_code: error.statusCode,
-            response: error.responseBody,
-            user_id: interaction.user_id
-          }, 'core_rejected_interaction')
-          res.status(502).json({ status: 'core_error' })
-          return
-        }
-
-        if (error instanceof CoreRequestFailedError) {
-          logger.error({
-            error: error.message,
-            user_id: interaction.user_id
-          }, 'core_unreachable')
-          res.status(502).json({ status: 'core_unreachable' })
-          return
-        }
-
-        throw error
+        // Pass error to error handler middleware
+        next(error)
+        return
       }
 
       logger.info({

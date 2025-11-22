@@ -181,7 +181,7 @@ describe('POST /telegram/webhook', () => {
     expect(coreClient.sendInteraction).not.toHaveBeenCalled()
   })
 
-  it('responde 502 cuando el core rechaza la interacción', async () => {
+  it('responde 400 cuando el core rechaza la interacción con 4xx', async () => {
     const { app, coreClient } = buildApp()
 
     coreClient.sendInteraction.mockRejectedValueOnce(
@@ -193,11 +193,33 @@ describe('POST /telegram/webhook', () => {
       .set(headers)
       .send(baseUpdate)
 
-    expect(response.statusCode).toBe(502)
-    expect(response.body).toEqual({ status: 'core_error' })
+    expect(response.statusCode).toBe(400)
+    expect(response.body).toMatchObject({
+      status: 'invalid_request',
+      error: expect.stringContaining('Core API rejected request')
+    })
   })
 
-  it('responde 502 cuando el core es inaccesible', async () => {
+  it('responde 502 cuando el core rechaza la interacción con 5xx', async () => {
+    const { app, coreClient } = buildApp()
+
+    coreClient.sendInteraction.mockRejectedValueOnce(
+      new CoreRequestRejectedError(500, 'internal server error')
+    )
+
+    const response = await request(app)
+      .post('/telegram/webhook')
+      .set(headers)
+      .send(baseUpdate)
+
+    expect(response.statusCode).toBe(502)
+    expect(response.body).toMatchObject({
+      status: 'error',
+      error: expect.stringContaining('Core API rejected request')
+    })
+  })
+
+  it('responde 503 cuando el core es inaccesible', async () => {
     const { app, coreClient } = buildApp()
 
     coreClient.sendInteraction.mockRejectedValueOnce(
@@ -209,8 +231,11 @@ describe('POST /telegram/webhook', () => {
       .set(headers)
       .send(baseUpdate)
 
-    expect(response.statusCode).toBe(502)
-    expect(response.body).toEqual({ status: 'core_unreachable' })
+    expect(response.statusCode).toBe(503)
+    expect(response.body).toMatchObject({
+      status: 'error',
+      error: expect.stringContaining('Core API request failed')
+    })
   })
 })
 
